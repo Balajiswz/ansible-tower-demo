@@ -1,0 +1,39 @@
+---
+  tasks:
+  - name: "Install HTTP"
+    yum:
+      name: httpd
+      state: latest
+
+  - name: "HTTP Configuration file setup"
+    copy:
+      src: ./httpd.conf.j2
+      dest: /etc/httpd/conf/httpd.conf
+    notify: restart_http  
+
+  - name: "Configure document root"
+    lineinfile:
+      path: /var/www/html/index.html
+      create: yes
+      line: "Hello from Tower\n"
+      regexp: '^Hello from Tower'
+      state: present
+
+  - name: "Start and enable the http service"
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+  - name: "Open Firewall service for http"
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+      immediate: yes
+
+  handlers:   
+  - name: restart_http
+    service:
+      name: httpd
+      state: restarted
